@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK 模拟考试 (一级)</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-20">
+
+    <!-- ================= WELCOME / LOGIN SCREEN ================= -->
+    <div id="welcome-screen" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center space-y-6">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+                HSK
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">HSK 一级在线模拟考试</h2>
+                <p class="text-slate-500 text-sm mt-1">请输入您的姓名开始考试 (时间限制：40分钟)</p>
+            </div>
+            <div class="space-y-3 text-left">
+                <label class="block text-sm font-medium text-slate-700">输入您的姓名 (姓名 / Họ tên):</label>
+                <input type="text" id="student-name" placeholder="例如：Nguyen Van A" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <p id="name-error" class="text-rose-500 text-xs hidden">请输入您的姓名才能开始！</p>
+            </div>
+            <button onclick="startExam()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition duration-200 text-lg">
+                Bắt đầu làm bài
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= EXAM INTERFACE (Hidden initially) ================= -->
+    <div id="exam-screen" class="hidden">
+        
+        <!-- Top Sticky Header & Timer & Audio Player -->
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm py-3 px-4 mb-6">
+            <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <span>HSK (一级) 模拟试卷</span>
+                        <span id="display-name" class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md font-normal"></span>
+                    </h1>
+                    <p class="text-xs text-slate-500">听力与阅读考试 (共 40 题)</p>
+                </div>
+                
+                <!-- Timer Display -->
+                <div class="flex items-center gap-4">
+                    <div id="timer-box" class="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-xl font-mono font-bold text-sm flex items-center gap-1.5">
+                        <span>⏱️ 剩余时间:</span>
+                        <span id="time-left">40:00</span>
+                    </div>
+                    <div class="w-full sm:w-64">
+                        <audio controls class="w-full h-8">
+                            <source src="audio.mp3" type="audio/mpeg">
+                            您的浏览器不支持音频播放。
+                        </audio>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-4 space-y-8">
+
+            <!-- ================= LISTENING SECTION ================= -->
+            <section class="space-y-6">
+                <div class="border-b-2 border-indigo-600 pb-2">
+                    <h2 class="text-2xl font-bold text-indigo-900">第一部分：听力 (第一到二十题)</h2>
+                </div>
+
+                <!-- Q1 - Q5: Image-based grid options -->
+                <script>
+                    const q1_5 = [
+                        {n: 1, text: "第一题"},
+                        {n: 2, text: "第二题"},
+                        {n: 3, text: "第三题"},
+                        {n: 4, text: "第四题"},
+                        {n: 5, text: "第五题"}
+                    ];
+                    q1_5.forEach(item => {
+                        document.write(`
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                                <p class="font-bold text-lg mb-3 text-slate-800">${item.n}.</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    ${['A', 'B', 'C'].map(opt => `
+                                        <label class="border-2 border-slate-100 bg-slate-50 hover:border-indigo-500 rounded-xl p-3 flex flex-col items-center cursor-pointer transition group">
+                                            <div class="w-full h-40 bg-white rounded-lg border border-slate-200 flex items-center justify-center overflow-hidden mb-2 relative">
+                                                <img src="${item.n}_${opt}.png" alt="选项 ${opt}" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x200/f1f5f9/64748b?text=图+${item.n}_${opt}'">
+                                            </div>
+                                            <div class="flex items-center space-x-2 mt-1">
+                                                <input type="radio" name="q${item.n}" value="${opt}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                                <span class="font-bold text-slate-700">${opt}</span>
+                                            </div>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+
+                <!-- Q6 - Q10: Standard Listening MC -->
+                <script>
+                    const q6_10 = [
+                        {n: 6, opts: ["A. 哪里", "B. 打电话", "C. 做饭 好吃"]},
+                        {n: 7, opts: ["A. 白天", "B. 生病了", "C. 水果店"]},
+                        {n: 8, opts: ["A. 八元", "B. 不是", "C. 便宜"]},
+                        {n: 9, opts: ["A. 去年", "B. 很漂亮", "C. 我弟弟"]},
+                        {n: 10, opts: ["A. 没有", "B. 再见", "C. 不要"]}
+                    ];
+                    q6_10.forEach(item => {
+                        document.write(`
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                                <p class="font-bold text-lg mb-3 text-slate-800">${item.n}.</p>
+                                <div class="space-y-2">
+                                    ${item.opts.map((opt, idx) => `
+                                        <label class="flex items-center p-3 rounded-lg border border-slate-100 bg-slate-50 hover:bg-indigo-50/50 cursor-pointer transition">
+                                            <input type="radio" name="q${item.n}" value="${String.fromCharCode(65+idx)}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                            <span class="ml-3 font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+
+                <!-- Q11 - Q15: Shared Image at Top -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-3 text-slate-800">第十一到十五题 (看图配对)</h3>
+                    <div class="mb-4">
+                        <img src="11-15.png" alt="第 11-15 题配图" class="w-full max-h-96 object-contain rounded-lg border border-slate-200 bg-slate-100" onerror="this.src='https://placehold.co/800x400/f1f5f9/475569?text=Images+11-15+Shared'">
+                    </div>
+                    <div class="space-y-3">
+                        <script>
+                            for(let i=11; i<=15; i++) {
+                                document.write(`
+                                    <div class="py-2.5 px-3 bg-slate-50 border border-slate-100 rounded-lg flex flex-wrap items-center justify-between gap-2">
+                                        <span class="font-bold text-slate-700">${i}.</span>
+                                        <div class="flex gap-2">
+                                            ${['A','B','C','D','E','F'].map(char => `
+                                                <label class="inline-flex items-center px-3 py-1 bg-white border rounded cursor-pointer hover:bg-indigo-50">
+                                                    <input type="radio" name="q${i}" value="${char}" class="mr-1 text-indigo-600"> ${char}
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `);
+                            }
+                        </script>
+                    </div>
+                </div>
+
+                <!-- Q16 - Q20 -->
+                <script>
+                    const q16_20 = [
+                        {n: 16, opts: ["A. 60岁", "B. 60多岁", "C. 70岁"]},
+                        {n: 17, opts: ["A. 电脑", "B. 杯子", "C. 手机"]},
+                        {n: 18, opts: ["A. 女儿", "B. 妹妹", "C. 高女士"]},
+                        {n: 19, opts: ["A. 包子", "B. 面包", "C. 面条儿"]},
+                        {n: 20, opts: ["A. 早上", "B. 中午", "C. 星期天"]}
+                    ];
+                    q16_20.forEach(item => {
+                        document.write(`
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                                <p class="font-bold text-lg mb-3 text-slate-800">${item.n}.</p>
+                                <div class="space-y-2">
+                                    ${item.opts.map((opt, idx) => `
+                                        <label class="flex items-center p-3 rounded-lg border border-slate-100 bg-slate-50 hover:bg-indigo-50/50 cursor-pointer transition">
+                                            <input type="radio" name="q${item.n}" value="${String.fromCharCode(65+idx)}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                                            <span class="ml-3 font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+            </section>
+
+            <!-- ================= READING SECTION ================= -->
+            <section class="space-y-6 pt-6">
+                <div class="border-b-2 border-emerald-600 pb-2">
+                    <h2 class="text-2xl font-bold text-emerald-900">第二部分：阅读 (第二十一到四十题)</h2>
+                </div>
+
+                <!-- Q21 - Q25: Shared Image at Top + Sentences -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-3 text-slate-800">第二十一到二十五题 (判断正误 / 图文配对)</h3>
+                    <div class="mb-4">
+                        <img src="21-25.png" alt="第 21-25 题配图" class="w-full max-h-96 object-contain rounded-lg border border-slate-200 bg-slate-100" onerror="this.src='https://placehold.co/800x400/f1f5f9/475569?text=Images+21-25+Shared'">
+                    </div>
+                    <div class="space-y-4">
+                        <script>
+                            const q21_25_texts = [
+                                "21. 王先生是医生。",
+                                "22. 姐姐上午去超市买了菜。",
+                                "23. 今天的早饭是牛奶和鸡蛋。",
+                                "24. 我家有四口人，爸爸、妈妈、弟弟和我。",
+                                "25. 她和好朋友都爱唱歌。"
+                            ];
+                            q21_25_texts.forEach((txt, idx) => {
+                                let qNum = 21 + idx;
+                                document.write(`
+                                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                                        <span class="font-bold text-slate-900 text-lg block">${txt}</span>
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                            ${['A','B','C','D','E','F'].map(char => `
+                                                <label class="flex items-center justify-center px-4 py-2.5 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-500 transition shadow-sm flex-1 min-w-[50px]">
+                                                    <input type="radio" name="q${qNum}" value="${char}" class="mr-2 w-5 h-5 text-emerald-600 focus:ring-emerald-500"> 
+                                                    <span class="text-xl font-bold text-slate-800">${char}</span>
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        </script>
+                    </div>
+                </div>
+
+                <!-- Q26 - Q30: Matching dialogues (Enlarged spaced reference box) -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-3 text-slate-800">第二十六到三十题 (问答配对)</h3>
+                    
+                    <!-- Enlarged & Spread Reference Box for 26-30 -->
+                    <div class="mb-5 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 shadow-sm">
+                        <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">备选答案 (Reference Options)</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">A.</span> 商店
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">B.</span> 我学生
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">C.</span> 在桌子上
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">D.</span> 还没有
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">E.</span> 下雪了
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">F.</span> 好的，谢谢！
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <script>
+                            const q26_30_texts = [
+                                "26. 这是我的书，你的呢？",
+                                "27. 你去哪儿买苹果？",
+                                "28. 昨天天气怎么样？",
+                                "29. 你和谁打电话呢？",
+                                "30. 你下班了吗？"
+                            ];
+                            q26_30_texts.forEach((txt, idx) => {
+                                let qNum = 26 + idx;
+                                document.write(`
+                                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                                        <span class="font-bold text-slate-900 text-lg block">${txt}</span>
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                            ${['A','B','C','D','E','F'].map(char => `
+                                                <label class="flex items-center justify-center px-4 py-2.5 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-500 transition shadow-sm flex-1 min-w-[50px]">
+                                                    <input type="radio" name="q${qNum}" value="${char}" class="mr-2 w-5 h-5 text-emerald-600 focus:ring-emerald-500"> 
+                                                    <span class="text-xl font-bold text-slate-800">${char}</span>
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        </script>
+                    </div>
+                </div>
+
+                <!-- Q31 - Q35: Fill in blanks with word bank (Enlarged spaced reference box) -->
+                <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-3 text-slate-800">第三十一到三十五题 (选词填空)</h3>
+                    
+                    <!-- Enlarged & Spread Reference Box for 31-35 -->
+                    <div class="mb-5 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4 shadow-sm">
+                        <p class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-3">备选词语 (Word Bank)</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">A.</span> 认识
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">B.</span> 住
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">C.</span> 晚饭
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">D.</span> 叫
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">E.</span> 汉字
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg border border-emerald-100 font-bold text-xl text-slate-800 shadow-sm flex items-center gap-2">
+                                <span class="text-emerald-600">F.</span> 块
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <script>
+                            const q31_35_texts = [
+                                "31. 大家都没吃（ &nbsp;&nbsp;&nbsp; ）呢。",
+                                "32. 在今天的中文课上，我学了很多（ &nbsp;&nbsp;&nbsp; ）。",
+                                "33. 对不起，我不（ &nbsp;&nbsp;&nbsp; ）这个人。",
+                                "34. 我和家人（ &nbsp;&nbsp;&nbsp; ）在北京。",
+                                "35. 男：这些东西可以卖多少钱？ 女：80（ &nbsp;&nbsp;&nbsp;）。"
+                            ];
+                            q31_35_texts.forEach((txt, idx) => {
+                                let qNum = 31 + idx;
+                                document.write(`
+                                    <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-3">
+                                        <span class="font-bold text-slate-900 text-lg block">${txt}</span>
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                            ${['A','B','C','D','E','F'].map(char => `
+                                                <label class="flex items-center justify-center px-4 py-2.5 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-500 transition shadow-sm flex-1 min-w-[50px]">
+                                                    <input type="radio" name="q${qNum}" value="${char}" class="mr-2 w-5 h-5 text-emerald-600 focus:ring-emerald-500"> 
+                                                    <span class="text-xl font-bold text-slate-800">${char}</span>
+                                                </label>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `);
+                            });
+                        </script>
+                    </div>
+                </div>
+
+                <!-- Q36 - Q40: Reading Comprehension MC -->
+                <script>
+                    const q36_40 = [
+                        {
+                            n: 36,
+                            text: "下雨了，我们坐出租车回家吧。<br><span class='text-sm text-slate-500 font-normal'>问：说话人想怎么回家？</span>",
+                            opts: ["A. 开车", "B. 坐飞机", "C. 坐出租车"]
+                        },
+                        {
+                            n: 37,
+                            text: "我儿子今年16岁了，正在上中学。<br><span class='text-sm text-slate-500 font-normal'>问：说话人的儿子是：</span>",
+                            opts: ["A. 小学生", "B. 中学生", "C. 大学生"]
+                        },
+                        {
+                            n: 38,
+                            text: "小猫和小狗都在房间外睡觉呢。<br><span class='text-sm text-slate-500 font-normal'>问：小狗在：</span>",
+                            opts: ["A. 桌子下", "B. 房间里", "C. 房间外"]
+                        },
+                        {
+                            n: 39,
+                            text: "我同学在这个学校工作了很多年，你有问题可以问他。<br><span class='text-sm text-slate-500 font-normal'>问：说话人的同学在哪儿上班？</span>",
+                            opts: ["A. 饭店", "B. 医院", "C. 学校"]
+                        },
+                        {
+                            n: 40,
+                            text: "这个小朋友写字真好看。<br><span class='text-sm text-slate-500 font-normal'>问：那个小朋友：</span>",
+                            opts: ["A. 名字好听", "B. 写字好看", "C. 正在读书"]
+                        }
+                    ];
+                    q36_40.forEach(item => {
+                        document.write(`
+                            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                                <p class="font-bold text-slate-900 mb-3">${item.n}. ${item.text}</p>
+                                <div class="space-y-2">
+                                    ${item.opts.map((opt, idx) => `
+                                        <label class="flex items-center p-3 rounded-lg border border-slate-100 bg-slate-50 hover:bg-emerald-50/50 cursor-pointer transition">
+                                            <input type="radio" name="q${item.n}" value="${String.fromCharCode(65+idx)}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500">
+                                            <span class="ml-3 font-medium">${opt}</span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `);
+                    });
+                </script>
+            </section>
+
+            <!-- Submit Section -->
+            <div class="pt-6 text-center space-y-3">
+                <button type="button" onclick="submitExam()" style="background: #27ae60; color: white; border: none; padding: 14px 20px; font-size: 18px; border-radius: 6px; cursor: pointer; display: block; width: 100%; font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.15); margin-top: 30px;">Nộp Bài Thi</button>
+                <p class="text-emerald-700 font-medium text-sm italic">Cố gắng lên nhé, bạn đã làm rất tốt! Chúc bạn đạt kết quả cao!</p>
+            </div>
+
+            <!-- Google Sheet tracking link placeholder (Hidden from UI, ready for user to paste link) -->
+            <!-- 
+                GOOGLE SHEET TRACKING LINK PLACEHOLDER:
+                Paste your Google Sheet web app link or form link in the href attribute below if needed later:
+                <a href="https://sheetdb.io/api/v1/b4cig3vayruop" target="_blank">Link</a>
+            -->
+
+        </main>
+    </div>
+
+    <!-- Custom Modal for Confirmation / Messages (Replaces alert/confirm) -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+            <h3 id="modal-title" class="text-xl font-bold text-slate-900">提示</h3>
+            <p id="modal-message" class="text-slate-600 text-base"></p>
+            <div id="modal-buttons" class="flex gap-3 pt-2">
+                <!-- Dynamically populated buttons -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal Box -->
+    <div id="result-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+            <h3 class="text-2xl font-bold text-slate-900">考试完成 (Hoàn thành bài thi)</h3>
+            <div id="result-text" class="text-slate-600 text-base space-y-1"></div>
+            <button onclick="location.reload()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition">完成并重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let savedStudentName = ''; // 🟢 Biến toàn cục để lưu lại tên học viên
+        let timeLeft = 40 * 60;
+
+        function startExam() {
+            const nameInput = document.getElementById('student-name');
+            const nameError = document.getElementById('name-error');
+            const studentName = nameInput.value.trim();
+
+            if (!studentName) {
+                nameError.classList.remove('hidden');
+                nameInput.focus();
+                return;
+            }
+
+            // 🟢 Lưu tên vào biến để mang sang hàm nộp bài dùng
+            savedStudentName = studentName;
+
+            nameError.classList.add('hidden');
+            document.getElementById('display-name').innerText = `考生: ${studentName}`;
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('exam-screen').classList.remove('hidden');
+
+            // Start 40-min countdown timer
+            startTimer();
+        }
+
+        function startTimer() {
+            const timerDisplay = document.getElementById('time-left');
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmitExam();
+                    return;
+                }
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Warning state when under 5 minutes
+                if (timeLeft < 300) {
+                    document.getElementById('timer-box').classList.add('animate-pulse', 'bg-rose-100');
+                }
+            }, 1000);
+        }
+
+        function showCustomModal(title, message, buttonsHtml) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-buttons').innerHTML = buttonsHtml;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        function confirmSubmit() {
+            let answeredCount = 0;
+            for (let i = 1; i <= 40; i++) {
+                if (document.querySelector(`input[name="q${i}"]:checked`)) {
+                    answeredCount++;
+                }
+            }
+            
+            showCustomModal(
+                "确认交卷 (Xác nhận nộp bài)",
+                `您已回答 ${answeredCount} / 40 道题。确定要提交试卷吗？`,
+                `
+                    <button onclick="closeCustomModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-800 py-3 rounded-xl font-medium transition">继续答题</button>
+                    <button onclick="closeCustomModal(); submitExamProcess();" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-medium transition">确认交卷</button>
+                `
+            );
+        }
+
+        function autoSubmitExam() {
+            showCustomModal(
+                "时间到 (Hết giờ)",
+                "⏰ 考试时间已到！系统已自动提交您的试卷。",
+                `<button onclick="closeCustomModal(); submitExamProcess();" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-medium transition">查看结果</button>`
+            );
+        }
+
+        function submitExamProcess() {
+            clearInterval(timerInterval);
+            let answeredCount = 0;
+            for (let i = 1; i <= 40; i++) {
+                if (document.querySelector(`input[name="q${i}"]:checked`)) {
+                    answeredCount++;
+                }
+            }
+
+            const studentName = document.getElementById('student-name').value.trim();
+            const modal = document.getElementById('result-modal');
+            const text = document.getElementById('result-text');
+            
+            text.innerHTML = `
+                <p><strong>考生姓名 (Họ tên):</strong> ${studentName}</p>
+                <p class="mt-2">您已成功提交试卷！</p>
+                <p>共完成 <strong>${answeredCount} / 40</strong> 题。</p>
+                <p class="text-xs text-slate-400 mt-4">感谢您的参与，祝您中文学习进步！</p>
+            `;
+            modal.classList.remove('hidden');
+        }
+        // Bảng đáp án chuẩn từ đề thi
+// Bảng đáp án chuẩn từ đề thi HSK 1
+// Bảng đáp án chuẩn từ đề thi HSK 1
+// Bảng đáp án chuẩn từ đề thi HSK 1
+// Bảng đáp án chuẩn từ đề thi HSK 1
+const answerKey = {
+    q1: 'C', q2: 'A', q3: 'C', q4: 'B', q5: 'C',
+    q6: 'B', q7: 'C', q8: 'B', q9: 'C', q10: 'A',
+    q11: 'B', q12: 'D', q13: 'E', q14: 'A', q15: 'F',
+    q16: 'A', q17: 'C', q18: 'A', q19: 'B', q20: 'B',
+    q21: 'B', q22: 'D', q23: 'A', q24: 'C', q25: 'F',
+    q26: 'C', q27: 'A', q28: 'E', q29: 'B', q30: 'D',
+    q31: 'C', q32: 'E', q33: 'A', q34: 'B', q35: 'F',
+    q36: 'C', q37: 'B', q38: 'C', q39: 'C', q40: 'B'
+};
+
+async function submitExam() {
+    // Dừng đồng hồ đếm ngược nếu có
+    if (typeof timerInterval !== 'undefined') {
+        clearInterval(timerInterval);
+    }
+
+    let correctCount = 0;
+    let detailsArray = []; 
+    
+    // Chấm điểm và ghi nhận chi tiết 40 câu
+    for (let i = 1; i <= 40; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const userChoice = selected ? selected.value : 'Bỏ trống';
+        const correctChoice = answerKey[`q${i}`];
+        
+        if (selected && userChoice === correctChoice) {
+            correctCount++;
+            detailsArray.push(`Q${i}:${userChoice}(Đ)`);
+        } else {
+            detailsArray.push(`Q${i}:${userChoice}(S->${correctChoice})`);
+        }
+    }
+    
+    const totalScore = correctCount * 5; // Mỗi câu 5 điểm (Tổng 200 điểm)
+    
+    // Tự động lấy tên học viên từ ô nhập tên trên web
+    const nameInputField = document.getElementById('studentName') || 
+                           document.getElementById('name') || 
+                           document.querySelector('input[name="studentName"]') || 
+                           document.querySelector('input[name="name"]');
+                           
+    const nameToSubmit = (typeof savedStudentName !== 'undefined' && savedStudentName) ? savedStudentName : 'Học viên ẩn danh';
+    
+    const detailString = detailsArray.join(', '); // Chuỗi chi tiết câu đúng/sai
+
+    // 🟢 GỬI DỮ LIỆU ĐẾN SHEETDB
+    const sheetDbUrl = 'https://sheetdb.io/api/v1/b4cig3vayruop';
+    
+    if (sheetDbUrl) {
+        try {
+            const response = await fetch(sheetDbUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    data: [
+                        {
+                            "Thời gian": new Date().toLocaleString(),
+                            "Họ tên": nameToSubmit,
+                            "Điểm số": totalScore,
+                            "Chi tiết": detailString
+                        }
+                    ]
+                })
+            });
+            const result = await response.json();
+            console.log('SheetDB đã nhận:', result);
+        } catch (err) {
+            console.error('Lỗi kết nối SheetDB:', err);
+        }
+    }
+
+    // Hiển thị màn hình kết quả cho học viên
+    document.body.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f4f6f8; font-family: Arial, sans-serif; padding: 20px;">
+            <div style="text-align: center; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); max-width: 600px; width: 100%;">
+                <h2 style="color: #27ae60; margin-bottom: 20px; font-size: 26px;">🎉 Nộp Bài Thành Công!</h2>
+                <p style="font-size: 18px; margin: 10px 0;">Học viên: <strong>${nameToSubmit}</strong></p>
+                <div style="font-size: 20px; margin: 20px 0; color: #2c3e50;">
+                    Số câu đúng: <strong>${correctCount} / 40</strong> câu
+                </div>
+                <div style="font-size: 32px; font-weight: bold; color: #e74c3c; margin: 20px 0;">
+                    Tổng điểm: ${totalScore} / 200 điểm
+                </div>
+                <p style="color: #7f8c8d; margin-top: 25px; font-style: italic; font-size: 16px;">Cảm ơn bạn đã hoàn thành bài thi HSK 1!</p>
+            </div>
+        </div>
+    `;
+}
+    </script>
+</body>
+</html>
