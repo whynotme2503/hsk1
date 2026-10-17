@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK 1 - 汉语水平考试（一级）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0fdf4;
+            color: #1e293b;
+        }
+        .content-text {
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-28">
+
+    <!-- MÀN HÌNH NHẬP TÊN ĐẦU TIÊN -->
+    <main id="nameScreen" class="fixed inset-0 bg-emerald-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-emerald-200 text-center space-y-6">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center text-2xl font-bold">
+                HSK 1
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900">新汉语水平考试 HSK (一级)</h2>
+                <p class="text-sm text-slate-600 mt-1">Nhập họ tên và nhấn <b>Enter</b> hoặc bấm nút để bắt đầu (Thời gian: 40 phút)</p>
+            </div>
+            <div class="space-y-3 text-left">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Họ và tên học viên <span class="text-red-500">*</span></label>
+                <input type="text" id="inputStudentName" placeholder="Nhập đầy đủ họ và tên..." class="w-full p-4 bg-emerald-50/50 border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-medium">
+            </div>
+            <button id="startExamBtn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95">
+                开始考试 (Bắt đầu)
+            </button>
+        </div>
+    </main>
+
+    <!-- STICKY TOP BAR: THỜI GIAN & TÊN -->
+    <header class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-emerald-200 shadow-sm py-3 px-4 z-40 hidden" id="examHeader">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="font-bold text-emerald-900 text-sm sm:text-base truncate max-w-[50%]">
+                考生 (Học viên): <span id="displayName" class="text-emerald-700 underline"></span>
+            </div>
+            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-1.5 rounded-xl font-bold text-sm sm:text-base flex items-center gap-2 shadow-sm shrink-0">
+                <span>⏱ 剩余时间:</span>
+                <span id="timerDisplay" class="font-mono text-lg">40:00</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 mt-6 space-y-8 hidden" id="examMainContent">
+
+        <div id="notificationBanner" class="hidden bg-red-600 text-white p-4 rounded-xl shadow-md text-center font-medium content-text transition-all"></div>
+
+        <div class="bg-emerald-100 border border-emerald-300 text-emerald-900 shadow-sm rounded-2xl py-6 px-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight uppercase">新汉语水平考试 HSK (一级) - 正式考试</h1>
+            <p class="content-text text-emerald-800 mt-2">第一部分：听力 (20题) | 第二部分：阅读 (20题)</p>
+        </div>
+
+        <form id="quizForm">
+            
+            <!-- THANH AUDIO NGHE CHUNG (audio.mp3) -->
+            <div class="bg-emerald-800 text-white p-5 rounded-2xl shadow-md mb-8 space-y-2 sticky top-16 z-30">
+                <h2 class="text-lg font-bold">🎧 听力录音播放 (audio.mp3)</h2>
+                <audio controls class="w-full">
+                    <source src="audio1.mp3" type="audio/mpeg">
+                    Trình duyệt không hỗ trợ audio.
+                </audio>
+            </div>
+
+            <!-- GIAO DIỆN CHÍNH -->
+            <div id="examContainer" class="space-y-12"></div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8 pb-12">
+                <button type="button" id="submitBtn" class="w-full sm:w-auto px-12 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-xl transition-all transform hover:-translate-y-0.5 content-text">
+                    交卷并提交结果 (Nộp bài)
+                </button>
+            </div>
+        </form>
+
+        <div id="resultSummary" class="hidden bg-white border border-emerald-200 rounded-2xl p-8 shadow-2xl mb-12 text-center space-y-4">
+            <h2 class="text-2xl font-bold text-slate-800">考试结果 (Kết quả tổng kết)</h2>
+            <div id="scoreDisplay" class="text-5xl font-black text-emerald-600">0 / 40</div>
+            <div id="pointDisplay" class="text-3xl font-bold text-slate-700">0 / 200 điểm</div>
+            <p id="scoreMessage" class="content-text text-slate-600">结果已成功保存到 Google Sheets！</p>
+        </div>
+    </div>
+
+    <footer class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-emerald-200 shadow-2xl py-3.5 px-4 z-30">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm text-slate-600 gap-2">
+            <div class="font-medium text-slate-800 flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Hotline / SĐT: <a href="tel:0799052526" class="text-emerald-700 font-bold hover:underline">0799.052.526</a>
+            </div>
+            <div class="text-slate-500">HNC - HSK 1 Final Exam System</div>
+        </div>
+    </footer>
+
+    <script>
+        const SHEETDB_URL = "https://sheetdb.io/api/v1/xag78bdfyt64g";
+
+        const examSections = [
+            {
+                title: "一、听力 第一部分 (第 1-5 题)",
+                desc: "判断对错 (Đúng / Sai)",
+                questions: [
+                    { id: 1, prompt: "第 1 题", img: "1 .png", type: "tf", ans: "Sai" },     // 1. X[cite: 12]
+                    { id: 2, prompt: "第 2 题", img: "2 .png", type: "tf", ans: "Đúng" },   // 2. √[cite: 12]
+                    { id: 3, prompt: "第 3 题", img: "3 .png", type: "tf", ans: "Sai" },     // 3. X[cite: 12]
+                    { id: 4, prompt: "第 4 题", img: "4 .png", type: "tf", ans: "Đúng" },   // 4. √[cite: 12]
+                    { id: 5, prompt: "第 5 题", img: "5 .png", type: "tf", ans: "Đúng" }    // 5. √[cite: 12]
+                ]
+            },
+            {
+                title: "一、听力 第二部分 (第 6-10 题)",
+                desc: "选择与对话内容一致的图片 (A, B, C)",
+                questions: [
+                    { id: 6, prompt: "第 6 题", type: "abc_img", ans: "A" },     // 6. A[cite: 12]
+                    { id: 7, prompt: "第 7 题", type: "abc_img", ans: "C" },     // 7. C[cite: 12]
+                    { id: 8, prompt: "第 8 题", type: "abc_img", ans: "C" },     // 8. C[cite: 12]
+                    { id: 9, prompt: "第 9 题", type: "abc_img", ans: "A" },     // 9. A[cite: 12]
+                    { id: 10, prompt: "第 10 题", type: "abc_img", ans: "B" }    // 10. B[cite: 12]
+                ]
+            },
+            {
+                title: "一、听力 第三部分 (第 11-15 题)",
+                desc: "选择正确答案 (A - F)",
+                sharedImg: "11-15 .png",
+                questions: [
+                    { id: 11, prompt: "第 11 题<br><span class='text-emerald-700 font-bold'>女：你好！<br>男：你好！很高兴认识你。</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "F" }, // 11. F[cite: 12]
+                    { id: 12, prompt: "第 12 题", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "E" }, // 12. E[cite: 12]
+                    { id: 13, prompt: "第 13 题", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "D" }, // 13. D[cite: 12]
+                    { id: 14, prompt: "第 14 题", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "B" }, // 14. B[cite: 12]
+                    { id: 15, prompt: "第 15 题", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "A" }  // 15. A[cite: 12]
+                ]
+            },
+            {
+    title: "一、听力 第四部分 (第 16-20 题)",
+    desc: "根据对话选择正确答案 (A, B, C)",
+    questions: [
+        { id: 16, prompt: "第 16 题", type: "mc", options: ["A. 很高", "B. 很漂亮", "C. 喜欢看书"], ans: "B" }, // 16. B[cite: 6, 12]
+        { id: 17, prompt: "第 17 题", type: "mc", options: ["A. 买东西", "B. 看电视", "C. 打电话"], ans: "C" }, // 17. C[cite: 6, 12]
+        { id: 18, prompt: "第 18 题", type: "mc", options: ["A. 今天", "B. 明天", "C. 上星期"], ans: "B" }, // 18. B[cite: 6, 12]
+        { id: 19, prompt: "第 19 题", type: "mc", options: ["A. 5块", "B. 6块", "C. 10块"], ans: "A" }, // 19. A[cite: 6, 12]
+        { id: 20, prompt: "第 20 题", type: "mc", options: ["A. 中国", "B. 老师家", "C. 饭馆儿"], ans: "C" }  // 20. C[cite: 6, 12]
+    ]
+},
+            {
+                title: "二、阅读 第一部分 (第 21-25 题)",
+                desc: "词语与图片连线 (A - F)",
+                questions: [
+                    { id: 21, prompt: "第 21 题：<span class='text-xl font-bold text-emerald-800'>请</span>", img: "21 .png", type: "tf", ans: "Đúng" },   // 21. √[cite: 12]
+                    { id: 22, prompt: "第 22 题：<span class='text-xl font-bold text-emerald-800'>儿子</span>", img: "22 .png", type: "tf", ans: "Sai" },   // 22. X[cite: 12]
+                    { id: 23, prompt: "第 23 题：<span class='text-xl font-bold text-emerald-800'>出租车</span>", img: "23 .png", type: "tf", ans: "Sai" }, // 23. X[cite: 12]
+                    { id: 24, prompt: "第 24 题：<span class='text-xl font-bold text-emerald-800'>说话</span>", img: "24 .png", type: "tf", ans: "Đúng" },   // 24. √[cite: 12]
+                    { id: 25, prompt: "第 25 题：<span class='text-xl font-bold text-emerald-800'>再见</span>", img: "25 .png", type: "tf", ans: "Sai" }    // 25. X[cite: 12]
+                ]
+            },
+            {
+                title: "二、阅读 第二部分 (第 26-30 题)",
+                desc: "句子与图片匹配 (A - F)",
+                sharedImg: "26-30 .png",
+                questions: [
+                    { id: 26, prompt: "第 26 题：<span class='font-bold text-emerald-800'>我们今天吃米饭怎么样？</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "C" }, // 26. C[cite: 12]
+                    { id: 27, prompt: "第 27 题：<span class='font-bold text-emerald-800'>你看，年、月、日不能写在这儿。</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "D" }, // 27. D[cite: 12]
+                    { id: 28, prompt: "第 28 题：<span class='font-bold text-emerald-800'>她听见有学生在后面叫她。</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "B" }, // 28. B[cite: 12]
+                    { id: 29, prompt: "第 29 题：<span class='font-bold text-emerald-800'>小狗，那里面有什么？</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "F" }, // 29. F[cite: 12]
+                    { id: 30, prompt: "第 30 题：<span class='font-bold text-emerald-800'>他想学习开飞机。</span>", type: "mc", options: ["A", "B", "C", "D", "E", "F"], ans: "A" }  // 30. A[cite: 12]
+                ]
+            },
+            {
+                title: "二、阅读 第三部分 (第 31-35 题)",
+                desc: "问答配对 (A - F)",
+                questions: [
+                    { id: 31, prompt: "第 31 题：你会写多少个汉字？", type: "mc", options: ["A. 我的同学", "B. 桌子下面", "C. 8点", "D. 很漂亮", "E. 很多", "F. 好的,谢谢"], ans: "E" }, // 31. E[cite: 12]
+                    { id: 32, prompt: "第 32 题：妈，我的猫去哪儿了？", type: "mc", options: ["A. 我的同学", "B. 桌子下面", "C. 8点", "D. 很漂亮", "E. 很多", "F. 好的,谢谢"], ans: "B" }, // 32. B[cite: 12]
+                    { id: 33, prompt: "第 33 题：你什么时候回来？", type: "mc", options: ["A. 我的同学", "B. 桌子下面", "C. 8点", "D. 很漂亮", "E. 很多", "F. 好的,谢谢"], ans: "C" }, // 33. C[cite: 12]
+                    { id: 34, prompt: "第 34 题：这个衣服怎么样？", type: "mc", options: ["A. 我的同学", "B. 桌子下面", "C. 8点", "D. 很漂亮", "E. 很多", "F. 好的,谢谢"], ans: "D" }, // 34. D[cite: 12]
+                    { id: 35, prompt: "第 35 题：买椅子的那个人是谁？", type: "mc", options: ["A. 我的同学", "B. 桌子下面", "C. 8点", "D. 很漂亮", "E. 很多", "F. 好的,谢谢"], ans: "A" }  // 35. A[cite: 12]
+                ]
+            },
+            {
+                title: "二、阅读 第四部分 (第 36-40 题)",
+                desc: "选词填空 (A - F): <br><span class='text-emerald-700 text-sm'>备选词：A. 怎么 &nbsp; B. 爱 &nbsp; C. 读 &nbsp; D. 名字 &nbsp; E. 工作 &nbsp; F. 朋友</span>",
+                questions: [
+                    { id: 36, prompt: "第 36 题：他的女儿现在在火车站 ( &nbsp;&nbsp;&nbsp;&nbsp; )。", type: "mc", options: ["A. 怎么", "B. 爱", "C. 读", "D. 名字", "E. 工作", "F. 朋友"], ans: "E" }, // 36. E[cite: 12]
+                    { id: 37, prompt: "第 37 题：这几本书你都 ( &nbsp;&nbsp;&nbsp;&nbsp; ) 了？", type: "mc", options: ["A. 怎么", "B. 爱", "C. 读", "D. 名字", "E. 工作", "F. 朋友"], ans: "C" }, // 37. C[cite: 12]
+                    { id: 38, prompt: "第 38 题：爸爸 ( &nbsp;&nbsp;&nbsp;&nbsp; ) 吃苹果。", type: "mc", options: ["A. 怎么", "B. 爱", "C. 读", "D. 名字", "E. 工作", "F. 朋友"], ans: "B" }, // 38. B[cite: 12]
+                    { id: 39, prompt: "第 39 题：女：你和你 ( &nbsp;&nbsp;&nbsp;&nbsp; ) 中午住哪里？ 男：我们住209。", type: "mc", options: ["A. 怎么", "B. 爱", "C. 读", "D. 名字", "E. 工作", "F. 朋友"], ans: "F" }, // 39. F[cite: 12]
+                    { id: 40, prompt: "第 40 题：男：你昨天 ( &nbsp;&nbsp;&nbsp;&nbsp; ) 没去看电影？ 女：对不起，昨天我去看医生了。", type: "mc", options: ["A. 怎么", "B. 爱", "C. 读", "D. 名字", "E. 工作", "F. 朋友"], ans: "A" }  // 40. A[cite: 12]
+                ]
+            }
+        ];
+
+        let timerInterval;
+        let timeLeft = 40 * 60;
+        let studentName = "";
+        let isSubmitted = false;
+
+        function renderExam() {
+            const container = document.getElementById('examContainer');
+            container.innerHTML = '';
+
+            examSections.forEach((section) => {
+                let sectionHtml = `
+                    <div class="bg-white border border-emerald-200 rounded-3xl p-6 shadow-sm space-y-6">
+                        <div class="border-b border-emerald-100 pb-4">
+                            <h2 class="text-xl font-bold text-emerald-900">${section.title}</h2>
+                            <p class="text-sm text-slate-600 mt-1">${section.desc}</p>
+                        </div>
+                `;
+
+                if (section.sharedImg) {
+                    sectionHtml += `
+                        <div class="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-200 text-center">
+                            <img src="${section.sharedImg}" alt="Hình chung" class="max-h-96 mx-auto rounded-xl shadow-sm object-contain bg-white" onerror="this.src='https://via.placeholder.com/700x350/e2e8f0/1e293b?text=${section.sharedImg}'">
+                        </div>
+                    `;
+                }
+
+                sectionHtml += `<div class="space-y-6">`;
+
+                section.questions.forEach(item => {
+                    if (item.type === 'abc_img') {
+                        sectionHtml += `
+                            <div id="card-${item.id}" class="bg-emerald-50/30 border border-emerald-200/70 rounded-2xl p-5 shadow-sm space-y-4">
+                                <div class="font-bold text-lg text-slate-900">${item.prompt}</div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <label class="border border-emerald-200 rounded-xl p-3 bg-white flex flex-col items-center gap-3 cursor-pointer hover:border-emerald-500 transition-all shadow-sm">
+                                        <img src="${item.id}_A .png" alt="${item.id}A" class="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-xl bg-slate-50" onerror="this.style.display='none'">
+                                        <div class="flex items-center gap-2 font-bold text-emerald-800 text-base">
+                                            <input type="radio" name="q_${item.id}" value="A" class="w-5 h-5 text-emerald-600"> A
+                                        </div>
+                                    </label>
+                                    <label class="border border-emerald-200 rounded-xl p-3 bg-white flex flex-col items-center gap-3 cursor-pointer hover:border-emerald-500 transition-all shadow-sm">
+                                        <img src="${item.id}_B .png" alt="${item.id}B" class="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-xl bg-slate-50" onerror="this.style.display='none'">
+                                        <div class="flex items-center gap-2 font-bold text-emerald-800 text-base">
+                                            <input type="radio" name="q_${item.id}" value="B" class="w-5 h-5 text-emerald-600"> B
+                                        </div>
+                                    </label>
+                                    <label class="border border-emerald-200 rounded-xl p-3 bg-white flex flex-col items-center gap-3 cursor-pointer hover:border-emerald-500 transition-all shadow-sm">
+                                        <img src="${item.id}_C .png" alt="${item.id}C" class="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-xl bg-slate-50" onerror="this.style.display='none'">
+                                        <div class="flex items-center gap-2 font-bold text-emerald-800 text-base">
+                                            <input type="radio" name="q_${item.id}" value="C" class="w-5 h-5 text-emerald-600"> C
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        let inputHtml = '';
+                        if (item.type === 'tf') {
+                            inputHtml = `
+                                <div class="flex gap-6 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer font-semibold"><input type="radio" name="q_${item.id}" value="Đúng" class="w-4 h-4 text-emerald-600"> 正确 (Đúng)</label>
+                                    <label class="flex items-center gap-2 cursor-pointer font-semibold"><input type="radio" name="q_${item.id}" value="Sai" class="w-4 h-4 text-emerald-600"> 错误 (Sai)</label>
+                                </div>
+                            `;
+                        } else {
+                            inputHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">` + item.options.map(opt => `
+                                <label class="flex items-center gap-2 p-2.5 bg-emerald-50/40 rounded-xl border border-emerald-100 hover:bg-emerald-100 cursor-pointer">
+                                    <input type="radio" name="q_${item.id}" value="${opt.charAt(0)}" class="w-4 h-4 text-emerald-600">
+                                    <span class="font-medium text-slate-800 text-sm">${opt}</span>
+                                </label>
+                            `).join('') + `</div>`;
+                        }
+
+                        let imgHtml = item.img ? `<div class="mb-3 text-center"><img src="${item.img}" alt="Hình câu ${item.id}" class="w-52 h-52 sm:w-60 sm:h-60 object-cover rounded-xl border border-emerald-200 shadow-sm mx-auto bg-slate-50" onerror="this.style.display='none'"></div>` : '';
+
+                        sectionHtml += `
+                            <div id="card-${item.id}" class="bg-emerald-50/30 border border-emerald-200/70 rounded-2xl p-4 sm:p-5 shadow-sm grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                                <div class="lg:col-span-7 space-y-2">
+                                    <div class="font-bold text-slate-900 content-text">${item.prompt}</div>
+                                    ${imgHtml}
+                                </div>
+                                <div class="lg:col-span-5 bg-white p-4 rounded-xl border border-emerald-200 shadow-inner">
+                                    <div class="text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">选择答案 (Chọn đáp án):</div>
+                                    ${inputHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                sectionHtml += `</div></div>`;
+                container.innerHTML += sectionHtml;
+            });
+        }
+
+        function startExam() {
+            const nameInput = document.getElementById('inputStudentName');
+            studentName = nameInput.value.trim();
+            if (!studentName) {
+                alert("请输入您的姓名！(Vui lòng nhập họ tên!)");
+                nameInput.focus();
+                return;
+            }
+
+            document.getElementById('nameScreen').classList.add('hidden');
+            document.getElementById('examHeader').classList.remove('hidden');
+            document.getElementById('examMainContent').classList.remove('hidden');
+            document.getElementById('displayName').textContent = studentName;
+
+            renderExam();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("考试时间到！系统已自动交卷。(Đã hết giờ! Hệ thống tự động nộp bài.)");
+                    handleSubmit(true);
+                    return;
+                }
+                timeLeft--;
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function handleSubmit(isAutoSubmit = false) {
+            if (isSubmitted) return;
+
+            if (!isAutoSubmit) {
+                let answeredCount = 0;
+                const totalQ = 40;
+                for (let i = 1; i <= totalQ; i++) {
+                    const radios = document.querySelectorAll(`input[name="q_${i}"]`);
+                    for (let r of radios) {
+                        if (r.checked) { answeredCount++; break; }
+                    }
+                }
+
+                if (answeredCount < totalQ) {
+                    if (!confirm(`您还有 ${totalQ - answeredCount} 道题未完成，确定要交卷吗？ (Bạn còn ${totalQ - answeredCount} câu chưa làm, chắc chắn muốn nộp chứ?)`)) {
+                        return;
+                    }
+                }
+            }
+
+            isSubmitted = true;
+            clearInterval(timerInterval);
+
+            let totalScore = 0;
+            let detailResults = [];
+            const totalQuestions = 40;
+
+            examSections.forEach(sec => {
+                sec.questions.forEach(item => {
+                    const radios = document.querySelectorAll(`input[name="q_${item.id}"]`);
+                    let userVal = "未选";
+                    radios.forEach(r => {
+                        r.disabled = true;
+                        if (r.checked) userVal = r.value;
+                    });
+
+                    const isCorrect = userVal === item.ans;
+                    if (isCorrect) totalScore++;
+                    detailResults.push(`C${item.id}: ${isCorrect ? 'Đúng' : 'Sai'} (${userVal})`);
+                });
+            });
+
+            // Tổng điểm thang 200 (mỗi câu 5 điểm)
+            const finalPoints = totalScore * 5;
+
+            if (SHEETDB_URL) {
+                fetch(SHEETDB_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            "Thời gian": new Date().toLocaleString(),
+                            "Họ tên": studentName,
+                            "Điểm số": `${totalScore} / ${totalQuestions} (${finalPoints} điểm)`,
+                            "Chi tiết": detailResults.join(" | ")
+                        }
+                    })
+                }).catch(err => console.error("Lỗi:", err));
+            }
+
+            document.getElementById('scoreDisplay').textContent = `${totalScore} / ${totalQuestions} câu`;
+            document.getElementById('pointDisplay').textContent = `${finalPoints} / 200 điểm`;
+
+            const resultSummary = document.getElementById('resultSummary');
+            resultSummary.classList.remove('hidden');
+            resultSummary.scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('submitBtn').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            document.getElementById('startExamBtn').addEventListener('click', startExam);
+            document.getElementById('inputStudentName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startExam();
+                }
+            });
+            document.getElementById('submitBtn').addEventListener('click', () => handleSubmit(false));
+        };
+    </script>
+</body>
+</html>
