@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST PINYIN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; user-select: none; font-size: 1.125rem; }
+        .sticky-audio { position: sticky; top: 10px; z-index: 50; backdrop-filter: blur(8px); }
+    </style>
+</head>
+<body class="bg-[#f5fbf7] min-h-screen text-slate-800 p-3 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden border border-[#e2f2eb]">
+        
+        <!-- HEADER -->
+        <header class="bg-[#52ab98] text-white p-6 md:p-8 text-center relative space-y-2">
+            <h1 class="text-3xl md:text-5xl font-black tracking-wide">TEST PINYIN</h1>
+            <div class="text-sm md:text-base font-semibold bg-[#2b675b]/30 inline-block px-5 py-2 rounded-full border border-white/20">
+                <i class="fa-solid fa-phone mr-1.5 text-amber-300"></i> Liên hệ: 0799052526
+            </div>
+        </header>
+
+        <!-- FORM NHẬP TÊN HỌC VIÊN -->
+        <div id="step-user-info" class="p-6 md:p-12">
+            <div class="max-w-md mx-auto bg-[#f5fbf7] p-6 md:p-10 rounded-2xl border border-[#e2f2eb] shadow-sm space-y-6">
+                <div class="text-center space-y-2">
+                    <h2 class="text-2xl font-black text-[#2b675b]"><i class="fa-solid fa-user-pen text-[#52ab98] mr-2"></i>Thông Tin Học Viên</h2>
+                    <p class="text-sm text-slate-600">Vui lòng nhập họ và tên để bắt đầu làm bài kiểm tra</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-[#2b675b] uppercase mb-2">Họ và tên (*):</label>
+                    <input type="text" id="student-name" placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-4 py-4 rounded-xl border border-[#c2e2d5] focus:outline-none focus:ring-2 focus:ring-[#52ab98] font-bold text-slate-800 text-lg bg-white">
+                </div>
+                <button onclick="startExercise()" class="w-full bg-[#52ab98] hover:bg-[#439382] active:scale-98 text-white font-black py-4 rounded-xl shadow-md transition text-lg">
+                    Bắt Đầu Làm Bài <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- KHU VỰC BÀI TẬP (ẨN TRƯỚC KHI NHẬP TÊN) -->
+        <div id="exercise-container" class="hidden p-4 md:p-10 space-y-10">
+
+            <!-- TRÌNH PHÁT AUDIO GHIM THÔNG MINH & TÊN HỌC VIÊN -->
+            <div class="sticky-audio bg-[#f0f8f4]/95 border-2 border-[#52ab98] p-5 rounded-2xl shadow-md space-y-3">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                    <div class="text-[#2b675b] font-bold text-base md:text-lg flex items-center">
+                        <i class="fa-solid fa-user-check text-[#52ab98] mr-2"></i>Học viên: <span id="display-student-name" class="text-[#2b675b] font-black ml-1">---</span>
+                    </div>
+                    <div id="score-badge" class="hidden text-base md:text-lg font-black px-5 py-2 rounded-xl bg-[#52ab98] text-white shadow">
+                        Kết quả: <span id="res-score">0 / 20</span> câu đúng
+                    </div>
+                </div>
+                <div class="pt-1 flex items-center justify-between gap-2">
+                    <span class="text-sm font-bold text-[#2b675b]"><i class="fa-solid fa-headphones mr-1"></i> File nghe: pinyin.mp3</span>
+                </div>
+                <audio controls class="w-full h-12">
+                    <source src="pinyin.mp3" type="audio/mpeg">
+                    Trình duyệt của bạn không hỗ trợ thẻ audio.
+                </audio>
+            </div>
+
+            <!-- TIÊU ĐỀ PHẦN BÀI TẬP -->
+            <div class="border-l-4 border-[#52ab98] pl-3 py-1">
+                <h2 class="text-2xl font-black text-[#2b675b]">Nghe và chọn đáp án Pinyin đúng (20 câu)</h2>
+            </div>
+
+            <!-- DANH SÁCH 20 CÂU HỎI -->
+            <div id="questions-list" class="space-y-6"></div>
+
+            <!-- NÚT NỘP BÀI -->
+            <div id="submit-section" class="pt-6 border-t border-[#f0f8f4] text-center space-y-3">
+                <button onclick="submitAll()" class="w-full md:w-auto px-12 py-5 bg-[#52ab98] hover:bg-[#439382] active:scale-95 text-white font-black text-xl rounded-2xl shadow-lg transition">
+                    <i class="fa-solid fa-paper-plane mr-2"></i> Nộp Bài & Xem Kết Quả
+                </button>
+                <p id="sheet-status-text" class="text-sm text-slate-500 font-medium"></p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SCRIPT XỬ LÝ -->
+    <script>
+        // LINK GOOGLE APPS SCRIPT
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyE6RgHNYo4Md1aUq59gB6jocoyZss_UAo7ZmEUazgD_MQ-8z3GCBczEH0cMeJC95v-iw/exec";
+
+        const questionsData = [
+            { id: 1, opts: ["A. yī shēng", "B. yì shēng", "C. yī shèng", "D. yí shēng"], ans: "A" },
+            { id: 2, opts: ["A. jǐ chǎng", "B. jī cháng", "C. jī chǎng", "D. jí chāng"], ans: "C" },
+            { id: 3, opts: ["A. xuě xiāo", "B. xué xiào", "C. xué xiǎo", "D. xuè xiāo"], ans: "B" },
+            { id: 4, opts: ["A. píng guǒ", "B. píng guō", "C. píng guò", "D. pīng guò"], ans: "A" },
+            { id: 5, opts: ["A. tǒng xuē", "B. tōng xué", "C. tóng xuě", "D. tóng xué"], ans: "D" },
+            { id: 6, opts: ["A. gāo xíng", "B. gāo xìng", "C. gǎo xǎng", "D. gào xíng"], ans: "B" },
+            { id: 7, opts: ["A. mìn fàn", "B. mí fàn", "C. mǐ fàn", "D. mǐ fān"], ans: "C" },
+            { id: 8, opts: ["A. hǎochī", "B. hào chī", "C. háo chī", "D. hǎo chí"], ans: "A" },
+            { id: 9, opts: ["A. fēi cháng", "B. fèi chàng", "C. fēicháng", "D. fèi chǎng"], ans: "A" },
+            { id: 10, opts: ["A. shì jiàn", "B. shí jiàn", "C. shì jiān", "D. shí jiān"], ans: "D" },
+            { id: 11, opts: ["A. fàn diàn", "B. fān diàn", "C. fàn diǎn", "D. fǎn diǎn"], ans: "A" },
+            { id: 12, opts: ["A. pī jiǔ", "B. pī jiū", "C. pí jiǔ", "D. pǐ jiù"], ans: "C" },
+            { id: 13, opts: ["A. diàn shí", "B. diàn shì", "C. diǎn shī", "D. diǎn shǐ"], ans: "B" },
+            { id: 14, opts: ["A. miàn bāo", "B. mián bāo", "C. mián bǎo", "D. miǎn bào"], ans: "A" },
+            { id: 15, opts: ["A. kě'ǎi", "B. kè'āi", "C. kē'ài", "D. kě'ài"], ans: "D" },
+            { id: 16, opts: ["A. piào liang", "B. piào liǎng", "C. piào liàng", "D. piāo liáng"], ans: "A" },
+            { id: 17, opts: ["A. huì dǎ", "B. huī dǎ", "C. huì dá", "D. huí dá"], ans: "D" },
+            { id: 18, opts: ["A. shuǐ jiǎo", "B. shuǐ jiào", "C. shuì jiào", "D. shuí jiào"], ans: "C" },
+            { id: 19, opts: ["A. lǎo shí", "B. lǎo shī", "C. lǎo shì", "D. láo shí"], ans: "B" },
+            { id: 20, opts: ["A. jiě jie", "B. jié jié", "C. jié jiè", "D. jiē jiè"], ans: "A" }
+        ];
+
+        let studentName = "";
+        let startTime = null;
+
+        function startExercise() {
+            studentName = document.getElementById('student-name').value.trim();
+            if (!studentName) {
+                alert("Vui lòng nhập họ và tên của bạn!");
+                return;
+            }
+            startTime = new Date(); // Bắt đầu tính giờ làm bài
+
+            document.getElementById('display-student-name').innerText = studentName;
+            document.getElementById('step-user-info').classList.add('hidden');
+            document.getElementById('exercise-container').classList.remove('hidden');
+
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-list');
+            container.innerHTML = questionsData.map(item => `
+                <div class="bg-white p-6 rounded-2xl border border-[#e2f2eb] space-y-4 transition" id="q-box-${item.id}">
+                    <div class="font-bold text-slate-900 text-lg">
+                        <span class="text-[#2b675b] mr-1.5">Câu ${item.id}.</span> Nghe và chọn đáp án đúng:
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${item.opts.map(opt => {
+                            const val = opt.charAt(0);
+                            return `
+                                <label class="flex items-center gap-3 p-4 bg-[#f9fcfa] border border-[#e2f2eb] rounded-xl cursor-pointer hover:bg-[#f0f8f4] transition" id="label-${item.id}-${val}">
+                                    <input type="radio" name="q-${item.id}" value="${val}" class="w-5 h-5 text-[#52ab98] focus:ring-[#52ab98]">
+                                    <span class="text-slate-900 font-semibold text-base">${opt}</span>
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    <!-- Vùng đối chiếu kết quả sau khi nộp -->
+                    <div id="ref-${item.id}" class="hidden p-4 rounded-xl text-base font-semibold mt-2"></div>
+                </div>
+            `).join('');
+        }
+
+        function submitAll() {
+            let totalCorrect = 0;
+            let detailsText = [];
+
+            questionsData.forEach(item => {
+                const selected = document.querySelector(`input[name="q-${item.id}"]:checked`);
+                const userChoice = selected ? selected.value : "Chưa chọn";
+                const isCorrect = userChoice === item.ans;
+
+                if (isCorrect) totalCorrect++;
+
+                const box = document.getElementById(`q-box-${item.id}`);
+                const refBox = document.getElementById(`ref-${item.id}`);
+                refBox.classList.remove('hidden');
+
+                if (isCorrect) {
+                    box.className = "bg-emerald-50/90 p-6 rounded-2xl border-2 border-emerald-400 space-y-4";
+                    refBox.className = "p-4 rounded-xl text-base font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                    refBox.innerHTML = `✔ Đúng! Bạn đã chọn [${userChoice}]`;
+                } else {
+                    box.className = "bg-rose-50/90 p-6 rounded-2xl border-2 border-rose-300 space-y-4";
+                    refBox.className = "p-4 rounded-xl text-base font-bold bg-rose-100 text-rose-800 border border-rose-300";
+                    refBox.innerHTML = `✘ Sai. Bạn chọn [${userChoice}] | Đáp án đúng chuẩn: <span class="underline font-black">${item.ans}</span>`;
+                }
+
+                document.querySelectorAll(`input[name="q-${item.id}"]`).forEach(r => r.disabled = true);
+                detailsText.push(`[Câu ${item.id}] Chọn: ${userChoice} (${isCorrect ? 'ĐÚNG' : 'SAI'})`);
+            });
+
+            // Tính thời gian làm bài
+            let endTime = new Date();
+            let totalSeconds = Math.floor((endTime - startTime) / 1000);
+            let minutes = Math.floor(totalSeconds / 60);
+            let seconds = totalSeconds % 60;
+            let durationString = `${minutes} phút ${seconds} giây`;
+
+            // Hiển thị điểm số
+            document.getElementById('score-badge').classList.remove('hidden');
+            document.getElementById('res-score').innerText = `${totalCorrect} / 20`;
+            document.getElementById('score-badge').scrollIntoView({ behavior: 'smooth' });
+
+            // GỬI KẾT QUẢ NGẦM VỀ GOOGLE SHEETS (5 CỘT)
+            const statusText = document.getElementById('sheet-status-text');
+            statusText.innerText = "⏳ Đang đồng bộ kết quả về hệ thống...";
+
+            const payload = {
+                lessonName: "TEST PINYIN",
+                studentName: studentName,
+                score: `${totalCorrect} / 20`,
+                duration: durationString,
+                details: detailsText.join(" || "),
+                submittedAt: new Date().toLocaleString()
+            };
+
+            const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+            
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(SCRIPT_URL, blob);
+                statusText.innerText = "✅ Đã lưu kết quả thành công vào Google Sheets!";
+                statusText.className = "text-sm font-bold text-[#2b675b] mt-2";
+            } else {
+                fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: blob }).then(() => {
+                    statusText.innerText = "✅ Đã lưu kết quả thành công vào Google Sheets!";
+                    statusText.className = "text-sm font-bold text-[#2b675b] mt-2";
+                });
+            }
+
+            document.getElementById('submit-section').querySelector('button').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
