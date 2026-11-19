@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HSK 一级</title>
+<style>
+:root{--ink:#1d1d1f;--mute:#6b6f76;--line:#222;--soft:#f4f1ea;--acc:#b3261e;--ok:#1e7a46;--sel:#1f3a8a}
+*{box-sizing:border-box}
+body{margin:0;background:#e9e6df;color:var(--ink);font:16px/1.5 "Noto Serif SC","Songti SC","SimSun","Times New Roman",serif}
+.paper{max-width:820px;margin:0 auto;background:#fff;padding:28px 36px 48px;box-shadow:0 0 0 1px #d5d1c7}
+.hidden{display:none!important}
+ruby rt{font-size:.55em;font-family:Arial,sans-serif;color:#333}
+ruby{ruby-position:over;margin:0 1px}
+/* cover */
+.cover{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.cover .paper{width:100%;border:2px solid var(--line);padding:48px 40px;text-align:center;box-shadow:none}
+.cover h1{font-size:44px;letter-spacing:.35em;margin:40px 0 8px}
+.cover h2{font-size:34px;letter-spacing:.2em;margin:0 0 40px}
+.cover h3{letter-spacing:1em;margin:30px 0 10px}
+.notes{text-align:left;max-width:520px;margin:0 auto 28px;font-size:15px}
+.notes p{margin:4px 0}
+.notes .vn{color:var(--mute);font-family:system-ui,sans-serif;font-size:13.5px;margin:0 0 10px 1.6em}
+.namebox{margin:26px auto 8px;max-width:420px;text-align:left;font-family:system-ui,sans-serif}
+.namebox label{font-weight:600;font-size:14px}
+.namebox input{width:100%;padding:12px 14px;margin-top:6px;border:2px solid var(--line);font-size:17px;border-radius:4px}
+.namebox input:focus{outline:3px solid #9db4f0}
+.btn{font-family:system-ui,sans-serif;font-size:17px;font-weight:600;padding:13px 34px;background:var(--line);color:#fff;border:0;border-radius:4px;cursor:pointer}
+.btn:hover{background:#000}.btn:disabled{background:#aaa;cursor:not-allowed}
+.btn.alt{background:#fff;color:var(--ink);border:2px solid var(--line)}
+.err{color:var(--acc);font-family:system-ui,sans-serif;font-size:13px;min-height:18px;margin:6px 0 0}
+.foot{display:flex;justify-content:space-between;margin-top:56px;font-weight:700;font-size:15px}
+/* top bar */
+#bar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:2px solid var(--line);font-family:system-ui,sans-serif}
+#bar .in{max-width:820px;margin:0 auto;padding:8px 14px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#who{font-weight:600;font-size:14px;flex:1;min-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#clock{font-variant-numeric:tabular-nums;font-size:24px;font-weight:700;letter-spacing:.04em;padding:2px 12px;border:2px solid var(--line);border-radius:4px;min-width:104px;text-align:center}
+#clock.warn{color:var(--acc);border-color:var(--acc);animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.45}}
+#audiowrap{flex:1 1 260px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+#audiowrap audio{height:34px;width:100%;max-width:340px}
+#prog{font-size:13px;color:var(--mute);white-space:nowrap}
+/* sections */
+.sec-title{text-align:center;font-size:26px;letter-spacing:.3em;margin:30px 0 4px}
+.part-title{text-align:center;font-size:17px;font-weight:700;margin:20px 0 4px}
+.range{margin:6px 0 10px;font-size:15px}
+table.t{width:100%;border-collapse:collapse;table-layout:fixed}
+table.t td{border:1.5px solid var(--line);text-align:center;vertical-align:middle;padding:8px;height:104px}
+table.t td.num{width:16%;font-size:17px}
+table.t td.pic img{max-height:88px;max-width:100%;object-fit:contain;display:block;margin:0 auto}
+table.t td.c3 img{max-height:90px}
+.ex{background:var(--soft)}
+.lbl{display:block;margin-top:4px;font-size:15px}
+.opt{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:system-ui,sans-serif}
+/* answer controls */
+.tf{display:inline-flex;gap:8px}
+.tf button,.chip{font:600 17px system-ui,sans-serif;min-width:48px;height:40px;border:2px solid #999;background:#fff;border-radius:5px;cursor:pointer;color:#333}
+.tf button:hover,.chip:hover{border-color:var(--line)}
+.on{background:var(--sel)!important;color:#fff!important;border-color:var(--sel)!important}
+.abc{display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.abc .chip{min-width:40px;height:36px;font-size:15px}
+/* part 3/4 */
+.grid6{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin:8px 0 14px}
+.grid6 .cell{display:flex;align-items:center;gap:14px;min-height:150px}
+.grid6 .cell b{font-size:17px;width:20px}
+.grid6 .cell img{max-height:128px;max-width:calc(100% - 40px);object-fit:contain}
+.words{display:flex;flex-wrap:wrap;gap:6px 26px;margin:10px 0 16px;font-size:20px}
+.words div{display:flex;align-items:baseline;gap:6px}
+.words b{font-size:15px}
+.line{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dotted #bbb;font-size:18px;line-height:2.2}
+.line.ex{background:var(--soft);padding-left:8px}
+.line .n{width:34px;flex:none}.line.ex .n{width:60px;white-space:nowrap}
+.line .q{flex:1}
+.line .a{flex:none;min-width:150px;display:flex;justify-content:flex-end}
+.dlg{display:block}
+.gap{display:inline-block;min-width:54px;border-bottom:2px solid #333;text-align:center;margin:0 4px;font-family:system-ui,sans-serif;font-weight:700;color:var(--sel)}
+.ansbox{display:inline-flex;width:38px;height:38px;border:1.5px solid var(--line);align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:700}
+.submitrow{text-align:center;margin-top:40px;padding-top:24px;border-top:2px solid var(--line);font-family:system-ui,sans-serif}
+.submitrow p{color:var(--mute);font-size:14px}
+.q2{display:grid;grid-template-columns:1fr 1fr}
+/* overlay */
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;padding:20px}
+#ov .box{background:#fff;padding:30px 34px;max-width:420px;text-align:center;border-radius:8px}
+#ov h3{margin:0 0 8px;font-size:22px}
+#ov p{margin:6px 0 18px;color:#444}
+#ov .row{display:flex;gap:10px;justify-content:center}
+/* result */
+.res h1{text-align:center;letter-spacing:.2em;font-size:26px;margin:6px 0}
+.score{text-align:center;font-family:system-ui,sans-serif;margin:16px 0 24px}
+.score .big{font-size:60px;font-weight:700;line-height:1}
+.score .big small{font-size:26px;color:var(--mute)}
+.cards{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.card{border:1.5px solid var(--line);padding:10px 22px;border-radius:6px;min-width:150px}
+.card b{display:block;font-size:22px}
+.meta{text-align:center;font-family:system-ui,sans-serif;color:var(--mute);font-size:14px}
+table.rv{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:14px;margin-top:10px}
+table.rv th,table.rv td{border:1px solid #ccc;padding:6px 8px;text-align:center}
+table.rv th{background:var(--soft)}
+td.good{color:var(--ok);font-weight:700}td.bad{color:var(--acc);font-weight:700}
+tr.bg td{background:#fff3f2}
+@media(max-width:640px){
+ .paper{padding:16px 12px 36px}
+ .cover h1{font-size:30px}.cover h2{font-size:26px}
+ table.t td{height:auto;padding:6px 3px}
+ table.t td.pic img{max-height:68px}
+ .grid6 .cell img{max-height:92px}.grid6 .cell{min-height:100px;gap:6px}
+ .line{flex-wrap:wrap;font-size:16px}.line .a{width:100%;justify-content:flex-start;margin-left:34px}
+ #clock{font-size:20px;min-width:88px}
+}
+
+.qn{white-space:nowrap}.flag{font:600 13px system-ui,sans-serif;width:28px;height:26px;border:1.5px solid #bbb;background:#fff;color:#999;border-radius:4px;cursor:pointer;padding:0;margin-top:4px}
+.flag:hover{border-color:#e08a00;color:#e08a00}
+.flag.on{background:#f59e0b!important;border-color:#f59e0b!important;color:#fff!important}
+.q3row .flag{position:absolute;right:6px;top:10px;margin:0}
+.line .n{display:flex;flex-direction:column;align-items:flex-start}
+.line.ex .n{display:block}
+td.num .flag{display:block;margin:6px auto 0}
+.line,.q3row,tr[id]{scroll-margin-top:84px}
+#nav{position:fixed;top:78px;right:12px;width:204px;max-height:calc(100vh - 92px);overflow:auto;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:12px;font-family:system-ui,sans-serif;font-size:13px;z-index:15}
+#nav h4{margin:0 0 8px;font-size:14px}
+#nav .sub{margin:10px 0 4px;color:var(--mute);font-size:12px}
+.ngrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.ngrid button{position:relative;height:32px;border:1.5px solid #aaa;background:#fff;border-radius:4px;font:600 13px system-ui,sans-serif;cursor:pointer;color:#333;padding:0}
+.ngrid button.done{background:var(--sel);border-color:var(--sel);color:#fff}
+.ngrid button.fl::after{content:'';position:absolute;top:-1px;right:-1px;border-style:solid;border-width:0 12px 12px 0;border-color:transparent #f59e0b transparent transparent}
+.ngrid button.fl{border-color:#f59e0b;box-shadow:inset 0 0 0 1.5px #f59e0b}
+.leg{display:flex;flex-wrap:wrap;gap:4px 10px;margin:8px 0;font-size:12px;color:#444}
+.leg i{display:inline-block;width:12px;height:12px;border:1.5px solid #aaa;border-radius:3px;vertical-align:-2px;margin-right:3px}
+.leg i.d{background:var(--sel);border-color:var(--sel)}.leg i.f{background:#f59e0b;border-color:#f59e0b}
+.cnt{display:flex;justify-content:space-between;font-size:12px;margin-top:8px;color:#333}
+#navbtn{display:none;font:600 14px system-ui,sans-serif;border:2px solid var(--line);background:#fff;border-radius:4px;padding:5px 10px;cursor:pointer}
+@media(max-width:1279px){
+ #navbtn{display:block}#navx{display:inline!important}
+ #nav{display:none;top:0;z-index:30;right:0;bottom:0;max-height:none;border-radius:0;border-width:0 0 0 2px;width:230px;box-shadow:-6px 0 18px rgba(0,0,0,.25)}
+ #nav.open{display:block}
+}
+@media print{#bar,.submitrow{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ===== TRANG 1: BÌA + NHẬP TÊN ===== -->
+<div id="cover" class="cover">
+ <div class="paper">
+  <div style="font-size:15px;color:var(--mute);font-family:system-ui,sans-serif">国家汉办/孔子学院总部 · Hanban / Confucius Institute Headquarters</div>
+  <h1>新汉语水平考试</h1>
+  <h2 style="margin-bottom:30px">HSK（一级）</h2>
+  
+  <h3>注 意</h3>
+  <div class="notes">
+   <p>一、HSK（一级）分两部分：</p>
+   <p style="margin-left:1.6em">1．听力（20 题，约 15 分钟）</p>
+   <p style="margin-left:1.6em">2．阅读（20 题，17 分钟）</p>
+   <p><b>二、听力结束后，有 3 分钟填写答题卡。</b></p>
+   <p>三、全部考试约 40 分钟（含考生填写个人信息时间 5 分钟）。</p>
+   <p class="vn">Tổng thời gian làm bài: <b>40 phút</b>, đếm ngược ngay khi bấm “Bắt đầu”. Hết giờ hệ thống tự đóng và nộp bài. Phần nghe sẽ tự phát khi bắt đầu (cần bật loa/tai nghe).</p>
+  </div>
+  <div class="namebox">
+   <label for="nm">Họ và tên / 姓名</label>
+   <input id="nm" type="text" maxlength="60" autocomplete="name" placeholder="Nhập họ tên rồi bấm Bắt đầu">
+   <div class="err" id="nmerr"></div>
+  </div>
+  <button class="btn" id="go">Bắt đầu làm bài　开始</button>
+  <div class="foot"><span>中国　北京</span><span>国家汉办/孔子学院总部　编制</span></div>
+ </div>
+</div>
+
+<!-- ===== BÀI LÀM ===== -->
+<div id="test" class="hidden">
+ <div id="bar"><div class="in">
+  <div id="who"></div>
+  <div id="audiowrap">🎧 <audio id="au" controls preload="auto" src="testhsk13_files/audio.mp3"></audio></div>
+  <div id="prog">0/40</div><button id="navbtn">☰ Danh sách câu</button>
+  <div id="clock">40:00</div>
+ </div></div>
+ <div class="paper" id="paper"></div>
+ <div id="nav"><h4>Danh sách câu hỏi <button id="navx" style="float:right;border:0;background:none;font-size:18px;cursor:pointer;display:none">✕</button></h4>
+  <div class="leg"><span><i class="d"></i>Đã làm</span><span><i></i>Chưa làm</span><span><i class="f"></i>Đánh dấu</span></div>
+  <div class="sub">听力 Nghe (1–20)</div><div class="ngrid" id="ng1"></div>
+  <div class="sub">阅读 Đọc (21–40)</div><div class="ngrid" id="ng2"></div>
+  <div class="cnt"><span>Đã làm: <b id="cd">0</b></span><span>Chưa: <b id="cu">40</b></span><span>⚑ <b id="cf">0</b></span></div>
+  <button class="btn" id="submit2" style="width:100%;margin-top:12px;padding:9px;font-size:15px">Nộp bài</button>
+ </div>
+</div>
+
+<!-- ===== KẾT QUẢ ===== -->
+<div id="result" class="hidden"><div class="paper res" id="resbody"></div></div>
+
+<div id="ov" class="hidden"><div class="box" id="ovbox"></div></div>
+
+<script>
+/* ---------- Dữ liệu ---------- */
+const KEY={1:'T',2:'X',3:'X',4:'X',5:'T',6:'C',7:'B',8:'C',9:'A',10:'B',11:'B',12:'E',13:'F',14:'A',15:'D',
+16:'A',17:'C',18:'B',19:'C',20:'A',21:'X',22:'T',23:'T',24:'T',25:'X',26:'D',27:'B',28:'F',29:'A',30:'C',
+31:'C',32:'E',33:'B',34:'D',35:'A',36:'F',37:'E',38:'A',39:'C',40:'B'};
+/* Đáp án đúng cho 21-25 là ✓/× , 26-30 là A-F ; 21 trong khóa là × => sửa lại bên dưới */
+
+const DURATION=40*60; // giây
+/* >>> DÁN LINK WEB APP CỦA APPS SCRIPT VÀO ĐÂY (dạng https://script.google.com/macros/s/XXXX/exec) <<< */
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbx5M7zuu8ql_CADSLhWECkwMmPOT5XcVY6RQFAExi9z3gPpDL7EhNxrxTR2qW8ombGG/exec';
+const LS='hsk_h11329_state';
+
+/* ruby: "你|nǐ 好|hǎo ！" */
+function R(s){return s.split(' ').map(t=>t.split('|')[0]).join('').replace(/([A-F])(?=[\u4e00-\u9fff])/g,'$1 ')}
+
+/* ---------- Dựng đề ---------- */
+function tfCell(n){return `<div class="tf" data-q="${n}"><button data-v="T">✓</button><button data-v="X">✗</button></div>`}
+function abc(n,letters){return `<div class="abc" data-q="${n}">${letters.map(l=>`<button class="chip" data-v="${l}">${l}</button>`).join('')}</div>`}
+const AF=['A','B','C','D','E','F'];
+
+function build(){
+ let h='';
+ h+=`<div class="sec-title">一、听　力</div><div class="part-title">第一部分</div><div class="range">第 1-5 题</div>
+ <table class="t"><colgroup><col style="width:17%"><col style="width:48%"><col style="width:35%"></colgroup>
+ <tr class="ex"><td class="num" rowspan="2">例如：</td><td class="pic"><img src="testhsk13_files/img/ex1a.jpg" alt=""></td><td>✓</td></tr>
+ <tr class="ex"><td class="pic"><img src="testhsk13_files/img/ex1b.jpg" alt=""></td><td>✗</td></tr>`;
+ for(let i=1;i<=5;i++) h+=`<tr><td class="num">${i}.</td><td class="pic"><img src="testhsk13_files/img/q${i}.jpg" alt=""></td><td>${tfCell(i)}</td></tr>`;
+ h+=`</table>`;
+
+ // Phần 2
+ h+=`<div class="part-title">第二部分</div><div class="range">第 6-10 题</div>
+ <table class="t c3"><colgroup><col style="width:13%"><col style="width:29%"><col style="width:29%"><col style="width:29%"></colgroup>
+ <tr class="ex"><td class="num">例如：</td>
+  <td class="pic c3"><img src="testhsk13_files/img/ex2a.jpg" alt=""><span class="lbl">A ✓</span></td>
+  <td class="pic c3"><img src="testhsk13_files/img/ex2b.jpg" alt=""><span class="lbl">B</span></td>
+  <td class="pic c3"><img src="testhsk13_files/img/ex2c.jpg" alt=""><span class="lbl">C</span></td></tr>`;
+ for(let i=6;i<=10;i++){
+  h+=`<tr><td class="num">${i}.</td>`+['a','b','c'].map((c,k)=>`<td class="pic c3"><img src="testhsk13_files/img/q${i}${c}.jpg" alt=""><span class="lbl"><button class="chip" style="min-width:40px;height:34px" data-q="${i}" data-v="${'ABC'[k]}">${'ABC'[k]}</button></span></td>`).join('')+`</tr>`;
+ }
+ h+=`</table>`;
+
+ // Phần 3 nghe
+ h+=`<div class="part-title">第三部分</div><div class="range">第 11-15 题</div><div class="grid6">`;
+ AF.forEach(L=>h+=`<div class="cell"><b>${L}</b><img src="testhsk13_files/img/p3${L}.jpg" alt=""></div>`);
+ h+=`</div>
+ <div class="line ex"><div class="n">例如：</div><div class="q dlg">${R('女： 你|nǐ 好|hǎo ！')}<br>${R('男： 你|nǐ 好|hǎo ！')}</div><div class="a"><span class="ansbox">C</span></div></div>`;
+ for(let i=11;i<=15;i++) h+=`<div class="line"><div class="n">${i}.</div><div class="q"></div><div class="a">${abc(i,AF)}</div></div>`;
+
+ // Phần 4 nghe
+ h+=`<div class="part-title">第四部分</div><div class="range">第 16-20 题</div>
+ <div class="line ex" style="flex-wrap:wrap"><div class="n">例如：</div><div class="q">${R('下午|xiàwǔ 我|wǒ 去|qù 商店|shāngdiàn ，我|wǒ 想|xiǎng 买|mǎi 一些|yìxiē 水果|shuǐguǒ 。')}<br>${R('问： 他|tā 下午|xiàwǔ 去|qù 哪里|nǎlǐ ？')}</div></div>
+ <div class="line ex"><div class="n"></div><div class="q">${R('A 商店|shāngdiàn')} ✓　　${R('B 医院|yīyuàn')}　　${R('C 学校|xuéxiào')}</div></div>`;
+ const L4={
+  16:['A 9：00','B 11：00','C 19：00'],
+  17:[R('A 茶|chá'),R('B 水果|shuǐguǒ'),R('C 热水|rè水|shuǐ').replace('热水|rè水|shuǐ','')],
+  18:[R('A 不|bù 高兴|gāoxìng'),R('B 好|hǎo 多|duō 了|le'),R('C 很|hěn 少|shǎo 说话|shuōhuà')],
+  19:[R('A 饭馆儿|fànguǎnr'),R('B 火车站|huǒchēzhàn'),R('C 电影院|diànyǐngyuàn')],
+  20:[R('A 王|Wáng 老师|lǎoshī'),R('B 王|Wáng 小姐|xiǎojiě'),R('C 他|tā 的|de 学生|xuésheng')]};
+ L4[17][2]=R('C 热水|rèshuǐ');
+ for(let i=16;i<=20;i++){
+  h+=`<div class="line"><div class="n">${i}.</div><div class="q">${L4[i].map(x=>`<span style="display:inline-block;min-width:30%;margin-right:8px">${x}</span>`).join('')}</div><div class="a">${abc(i,['A','B','C'])}</div></div>`;
+ }
+
+ // ===== ĐỌC =====
+ h+=`<div class="sec-title" style="margin-top:50px">二、阅　读</div><div class="part-title">第一部分</div><div class="range">第 21-25 题</div>
+ <table class="t"><colgroup><col style="width:16%"><col style="width:32%"><col style="width:24%"><col style="width:28%"></colgroup>
+ <tr class="ex"><td class="num" rowspan="2">例如：</td><td class="pic"><img src="testhsk13_files/img/r_ex1.jpg" alt=""></td><td>${R('电视|diànshì')}</td><td>✗</td></tr>
+ <tr class="ex"><td class="pic"><img src="testhsk13_files/img/r_ex2.jpg" alt=""></td><td>${R('飞机|fēijī')}</td><td>✓</td></tr>`;
+ const W={21:'四|sì',22:'猫|māo',23:'多|duō',24:'喝|hē',25:'出租车|chūzūchē'};
+ for(let i=21;i<=25;i++) h+=`<tr><td class="num">${i}.</td><td class="pic"><img src="testhsk13_files/img/r${i==25?25:i}.jpg" alt=""></td><td>${R(W[i])}</td><td>${tfCell(i)}</td></tr>`;
+ h+=`</table>`;
+
+ // Phần 2 đọc
+ h+=`<div class="part-title">第二部分</div><div class="range">第 26-30 题</div><div class="grid6">`;
+ AF.forEach(L=>h+=`<div class="cell"><b>${L}</b><img src="testhsk13_files/img/r2${L}.jpg" alt=""></div>`);
+ h+=`</div>
+ <div class="line ex"><div class="n">例如：</div><div class="q">${R('我|wǒ 很|hěn 喜欢|xǐhuan 这|zhè 本|běn 书|shū 。')}</div><div class="a"><span class="ansbox">E</span></div></div>`;
+ const S2={26:'妈妈|māma ，这个|zhège 字|zì 我|wǒ 会|huì 写|xiě 了|le 。',
+  27:'喂|wèi ，你|nǐ 好|hǎo ，是|shì 李|Lǐ 先生|xiānsheng 吗|ma ？',
+  28:'这个|zhège 衣服|yīfu 怎么样|zěnmeyàng ？',
+  29:'没关系|méiguānxi ，我|wǒ 这里|zhèlǐ 有|yǒu 钱|qián 。',
+  30:'下雨|xiàyǔ 了|le ，天气|tiānqì 有点儿|yǒudiǎnr 冷|lěng 。'};
+ for(let i=26;i<=30;i++) h+=`<div class="line"><div class="n">${i}.</div><div class="q">${R(S2[i])}</div><div class="a">${abc(i,AF)}</div></div>`;
+
+ // Phần 3 đọc: ghép câu
+ h+=`<div class="part-title">第三部分</div><div class="range">第 31-35 题</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;font-size:17px">
+ <div>`;
+ const Q3=[['例如：','你|nǐ 喝|hē 水|shuǐ 吗|ma ？',0],['31.','打电话|dǎdiànhuà 的|de 那个|nàge 人|rén 是|shì 谁|shéi ？'],['32.','你|nǐ 什么|shénme 时候|shíhou 去|qù 北京|Běijīng ？'],['33.','她|tā 的|de 汉语|Hànyǔ 怎么样|zěnmeyàng ？'],['34.','我|wǒ 的|de 杯子|bēizi 怎么|zěnme 不见|bújiàn 了|le ？'],['35.','这些|zhèxiē 苹果|píngguǒ 多少|duōshao 钱|qián ？']];
+ Q3.forEach((q,k)=>{h+=`<div class="${k?'q3row':''}" style="position:relative;padding:14px 0;border-bottom:1px dotted #bbb;min-height:84px;${k==0?'background:var(--soft);':''}"><span class="qn" style="display:inline-block;width:46px">${q[0]}</span>${R(q[1])}<div style="margin-top:8px;margin-left:46px">${k==0?'<span class="ansbox">F</span>':abc(30+k,AF)}</div></div>`});
+ h+=`</div><div>`;
+ const O3=[['A','27 块|kuài'],['B','很|hěn 好|hǎo 。'],['C','我|wǒ 同学|tóngxué 。'],['D','在|zài 这儿|zhèr 。'],['E','8|bā 月|yuè 1|yī 日|rì 。'],['F','好的|hǎode ，谢谢|xièxie ！']];
+ O3.forEach(o=>{h+=`<div style="padding:14px 0;border-bottom:1px dotted #bbb;min-height:84px;display:flex;align-items:center;gap:14px"><b style="font-family:system-ui">${o[0]}</b><span>${R(o[1])}</span></div>`});
+ h+=`</div></div>`;
+
+ // Phần 4 đọc: điền từ
+ h+=`<div class="part-title">第四部分</div><div class="range">第 36-40 题</div>
+ <div class="words">${[['A','上|shàng'],['B','爱|ài'],['C','大|dà'],['D','名字|míngzi'],['E','朋友|péngyou'],['F','工作|gōngzuò']].map(w=>`<div><b>${w[0]}</b>${R(w[1])}</div>`).join('')}</div>
+ <div class="line ex"><div class="n">例如：</div><div class="q">${R('你|nǐ 叫|jiào 什么|shénme （D）？')}</div></div>`;
+ const S4={36:'我|wǒ 爸爸|bàba 在|zài 医院|yīyuàn __ ，他|tā 是|shì 医生|yīshēng 。',
+  37:'我|wǒ 在|zài 中国|Zhōngguó 住|zhù 了|le 3 年|nián ，认识|rènshi 了|le 很|hěn 多|duō __ 。',
+  38:'椅子|yǐzi __ 的|de 东西|dōngxi 都|dōu 是|shì 你|nǐ 的|de ？',
+  39:'女： 你|nǐ 儿子|érzi 多|duō __ 了|le ？<br>男： 一|yī 岁|suì 零|líng 6 个|ge 月|yuè 。',
+  40:'男： 怎么|zěnme 买|mǎi 了|le 这么|zhème 多|duō 水果|shuǐguǒ ？<br>女： 我|wǒ 女儿|nǚ’ér 昨天|zuótiān 回来|huílái 了|le ，她|tā __ 吃|chī 水果|shuǐguǒ 。'};
+ for(let i=36;i<=40;i++){
+  let s=S4[i].split('<br>').map(x=>R(x).replace('__','<span class="gap" data-gap="'+i+'">&nbsp;</span>')).join('<br>');
+  h+=`<div class="line"><div class="n">${i}.</div><div class="q">${s}</div><div class="a">${abc(i,AF)}</div></div>`;
+ }
+
+ h+=`<div class="submitrow"><p>Kiểm tra lại bài trước khi nộp. Đã làm <b id="done2">0</b>/40 câu.</p><button class="btn" id="submit">Nộp bài　交卷</button></div>`;
+ document.getElementById('paper').innerHTML=h;
+}
+
+/* ---------- Trạng thái ---------- */
+let st={name:'',deadline:0,ans:{},flags:{},submitted:false};
+function save(){try{localStorage.setItem(LS,JSON.stringify(st))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s)return s}catch(e){}return null}
+const $=id=>document.getElementById(id);
+let tick=null;
+
+function decorate(){
+ for(let q=1;q<=40;q++){
+  const el=document.querySelector('#paper [data-q="'+q+'"]');if(!el)continue;
+  const row=el.closest('tr, .line, .q3row');row.id='q'+q;
+  const host=row.querySelector('td.num, .n, .qn')||row;
+  const b=document.createElement('button');b.className='flag';b.dataset.flag=q;b.title='Đánh dấu để xem lại';b.textContent='⚑';
+  host.appendChild(b);
+ }
+ const mk=(a,b,id)=>{let h='';for(let q=a;q<=b;q++)h+='<button data-go="'+q+'">'+q+'</button>';$(id).innerHTML=h};
+ mk(1,20,'ng1');mk(21,40,'ng2');
+}
+function mark(){
+ document.querySelectorAll('[data-q]').forEach(el=>{
+  const q=el.dataset.q;
+  if(el.dataset.v){ // single chip (part 2)
+   el.classList.toggle('on',st.ans[q]===el.dataset.v);
+  } else {
+   el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',st.ans[q]===b.dataset.v));
+  }
+ });
+ document.querySelectorAll('.gap').forEach(g=>{const a=st.ans[g.dataset.gap];g.innerHTML=a?a:'&nbsp;'});
+ document.querySelectorAll('.flag').forEach(f=>f.classList.toggle('on',!!st.flags[f.dataset.flag]));
+ document.querySelectorAll('[data-go]').forEach(b=>{const q=b.dataset.go;b.classList.toggle('done',!!st.ans[q]);b.classList.toggle('fl',!!st.flags[q])});
+ const nf=Object.keys(st.flags).length;
+ const n=Object.keys(st.ans).length;$('cd').textContent=n;$('cu').textContent=40-n;$('cf').textContent=nf;$('prog').textContent=n+'/40';const d=$('done2');if(d)d.textContent=n;
+}
+document.addEventListener('click',e=>{
+ const g=e.target.closest('[data-go]');
+ if(g){const r=$('q'+g.dataset.go);if(r)r.scrollIntoView({behavior:'smooth',block:'start'});$('nav').classList.remove('open');return}
+ const fl=e.target.closest('.flag');
+ if(fl&&!st.submitted){const q=fl.dataset.flag;if(st.flags[q])delete st.flags[q];else st.flags[q]=1;save();mark();return}
+ if(e.target.closest('#navx')){$('nav').classList.remove('open');return}
+ if(e.target.closest('#navbtn')){$('nav').classList.toggle('open');return}
+ const b=e.target.closest('button');if(!b||!b.dataset.v||st.submitted||!$('test')||$('test').classList.contains('hidden'))return;
+ const host=b.closest('[data-q]');const q=host.dataset.q||b.dataset.q;
+ st.ans[q]=(st.ans[q]===b.dataset.v)?undefined:b.dataset.v;
+ if(st.ans[q]===undefined)delete st.ans[q];
+ save();mark();
+});
+
+/* ---------- Đồng hồ ---------- */
+function fmt(s){s=Math.max(0,s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function loop(){
+ const left=Math.ceil((st.deadline-Date.now())/1000);
+ const c=$('clock');c.textContent=fmt(left);c.classList.toggle('warn',left<=300);
+ if(left<=0){finish(true)}
+}
+function start(resume){
+ $('cover').classList.add('hidden');$('test').classList.remove('hidden');
+ $('who').textContent='👤 '+st.name;
+ build();decorate();mark();window.scrollTo(0,0);
+ clearInterval(tick);loop();tick=setInterval(loop,500);
+ if(!resume){const a=$('au');a.play().catch(()=>{})}
+ $('submit').onclick=()=>confirmSubmit();$('submit2').onclick=()=>confirmSubmit();
+}
+function confirmSubmit(){
+ const n=Object.keys(st.ans).length;
+ ov(`<h3>Nộp bài?</h3><p>Bạn đã trả lời <b>${n}/40</b> câu.${n<40?' Còn '+(40-n)+' câu chưa làm.':''}${Object.keys(st.flags).length?' Có '+Object.keys(st.flags).length+' câu đang đánh dấu.':''}<br>Nộp rồi sẽ không sửa được.</p><div class="row"><button class="btn alt" id="no">Làm tiếp</button><button class="btn" id="yes">Nộp bài</button></div>`);
+ $('no').onclick=()=>$('ov').classList.add('hidden');
+ $('yes').onclick=()=>{$('ov').classList.add('hidden');finish(false)};
+}
+function ov(html){$('ovbox').innerHTML=html;$('ov').classList.remove('hidden')}
+
+/* ---------- Nộp bài & chấm ---------- */
+function finish(auto){
+ if(st.submitted&&!auto&&$('result').classList.contains('hidden')===false)return;
+ clearInterval(tick);st.submitted=true;st.submittedAt=st.submittedAt||Date.now();save();
+ try{$('au').pause()}catch(e){}
+ if(auto){
+  $('test').querySelectorAll('button').forEach(b=>b.disabled=true);
+  ov(`<h3>⏰ Hết giờ</h3><p>Hệ thống đang tự động nộp bài của bạn…</p>`);
+  setTimeout(()=>{$('ov').classList.add('hidden');showResult(true)},1800);
+ } else showResult(false);
+}
+function showResult(auto){
+ $('test').classList.add('hidden');$('nav').classList.remove('open');$('result').classList.remove('hidden');window.scrollTo(0,0);
+ let L=0,Rd=0,rows='';
+ const show=v=>v==='T'?'✓':v==='X'?'✗':(v||'—');
+ for(let i=1;i<=40;i++){
+  const u=st.ans[i],k=KEY[i],ok=u===k;
+  if(ok){i<=20?L++:Rd++}
+  rows+=`<tr class="${ok?'':'bg'}"><td>${i}</td><td>${show(u)}</td><td>${show(k)}</td><td class="${ok?'good':'bad'}">${ok?'✔':'✘'}</td></tr>`;
+ }
+ const total=L+Rd,used=Math.min(DURATION,Math.round((Math.min(st.submittedAt||Date.now(),st.deadline)-(st.deadline-DURATION*1000))/1000));
+ $('resbody').innerHTML=`<h1>HSK（一级）</h1>
+ <div class="meta">Thí sinh: <b style="color:#111">${esc(st.name)}</b> · ${auto?'Hết giờ, hệ thống tự nộp':'Nộp bài'} · Thời gian làm: ${fmt(used)}</div>
+ <div class="score"><div class="big">${total}<small> / 40</small></div><div style="margin-top:8px;color:var(--mute)">Số câu đúng / Tổng số câu</div>
+ </div>
+ <div class="meta" id="sendst" style="margin-top:18px"></div>
+ <div class="submitrow"><button class="btn alt hidden" id="resend">Gửi lại kết quả</button> <button class="btn" id="again">Làm lại bài mới</button></div>`;
+ sendResult({
+  name:st.name,
+  startedAt:new Date(st.deadline-DURATION*1000).toISOString(),
+  submittedAt:new Date(Math.min(st.submittedAt||Date.now(),st.deadline)).toISOString(),
+  usedSeconds:used,
+  auto:!!auto,
+  correct:total,listening:L,reading:Rd,total:40,
+  details:Array.from({length:40},(_,k)=>{const q=k+1,u=st.ans[q];return{q,chosen:u?show(u):'',answer:show(KEY[q]),ok:u===KEY[q]}})
+ });
+ $('again').onclick=()=>{try{localStorage.removeItem(LS)}catch(e){};location.reload()};
+}
+/* ---------- Gửi kết quả lên Google Sheet ---------- */
+function sendResult(p){
+ const box=$('sendst'),rs=$('resend');
+ if(!SCRIPT_URL){box.textContent='';return}
+ if(st.sent){box.innerHTML='✅ Đã gửi kết quả cho giáo viên.';return}
+ const go=()=>{
+  box.textContent='Đang gửi kết quả…';rs.classList.add('hidden');
+  fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(p)})
+   .then(()=>{st.sent=true;save();box.innerHTML='✅ Đã gửi kết quả cho giáo viên.'})
+   .catch(()=>{box.innerHTML='⚠️ Chưa gửi được kết quả (kiểm tra mạng).';rs.classList.remove('hidden')});
+ };
+ rs.onclick=go;go();
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+/* ---------- Khởi động ---------- */
+$('go').onclick=()=>{
+ const n=$('nm').value.trim();
+ if(n.length<2){$('nmerr').textContent='Vui lòng nhập họ và tên.';$('nm').focus();return}
+ st={name:n,deadline:Date.now()+DURATION*1000,ans:{},flags:{},submitted:false};save();start(false);
+};
+$('nm').addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+(function(){
+ const s=load();
+ if(s&&s.name&&s.deadline){
+  st=s;st.flags=st.flags||{};
+  if(st.submitted||Date.now()>=st.deadline){st.submitted=true;$('cover').classList.add('hidden');showResult(Date.now()>=st.deadline)}
+  else{
+   $('cover').classList.add('hidden');
+   start(true);
+   ov(`<h3>Tiếp tục bài làm</h3><p>Bài của <b>${esc(st.name)}</b> vẫn đang tính giờ. Bấm tiếp tục để quay lại (phần nghe bấm ▶ nếu cần).</p><div class="row"><button class="btn" id="cont">Tiếp tục</button></div>`);
+   $('cont').onclick=()=>$('ov').classList.add('hidden');
+  }
+ }
+})();
+</script>
+</body>
+</html>
